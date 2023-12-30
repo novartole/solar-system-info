@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+
+  web-app:
+    build:
+      context: .
+    depends_on:
+    - mongodb
+    - redis
+    environment:
+    - MONGODB_URI=mongodb://$MONGODB_USERNAME:$MONGODB_PASSWORD@mongodb:27017
+    - REDIS_URI=redis://redis
+    - RUST_LOG=debug
+    - IP=0.0.0.0
+    ports:
+    - 9000:9000
+
+  mongodb:
+    image: mongo
+    restart: always
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=$MONGODB_USERNAME
+    - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD
+    - MONGO_INITDB_DATABASE=solar_system_info
+    ports:
+    - 27017:27017
+    volumes:
+    - ./mongodb-init/:/docker-entrypoint-initdb.d/
+
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+    - 6379:6379

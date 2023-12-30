@@ -1,0 +1,7 @@
+[
+  {
+    "username": "mod_user",
+    "password": "$argon2id$v=19$m=19456,t=2,p=1$KX7tIVdEmF2DqsqkB0XpUQ$PAOq+tjh3gRhj8v8Oto3tokbrLe+JMl8TdXdaaDNy4w",
+    "access": "ReadWrite"
+  }
+]

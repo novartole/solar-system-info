@@ -1,0 +1,25 @@
+[package]
+name = "solar_system_info"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+askama = "0.12.1"
+axum = "0.7.2"
+mongodb = "2.7.1"
+redis = { version = "0.24.0", features = ["tokio-comp", "connection-manager"] }
+tokio = "1.35.0"
+tower = { version = "0.4.13", features = ["util"] }
+tower-http = { version = "0.5.0", features = ["fs"] }
+tokio-stream = "0.1.14"
+chrono = { version = "0.4.31", features = ["serde"] }
+serde = "1.0.193"
+serde_json = "1.0.108"
+dotenv = "0.15.0"
+derive_more = "0.99.17"
+log = "0.4.20"
+env_logger = "0.10.1"
+rust-embed = "8.1.0"
+mime = "0.3.17"
+http-auth-basic = "0.3.3"
+argon2 = "0.5.2"
