@@ -9,14 +9,26 @@ pub type CustomResult<T> = std::result::Result<T, CustomError>;
 
 pub enum CustomError {
     MongoDbError(mongodb::error::Error),
-    RedisError { message: String },
-    NotFound { message: String },
+    RedisError {
+        message: String,
+    },
+    NotFound {
+        message: String,
+    },
     SerdeError(serde_json::Error),
     TemplateError(askama::Error),
     InvalidAuthorizationHeader(http_auth_basic::AuthBasicError),
-    UserNotFound { message: String },
-    UserUnauthorized { message: String },
+    UserNotFound {
+        message: String,
+    },
+    UserUnauthorized {
+        message: String,
+    },
     HashError(argon2::password_hash::Error),
+    TooManyRequests {
+        actual_count: u64,
+        permission_count: u64,
+    },
 }
 
 impl fmt::Display for CustomError {
@@ -34,6 +46,13 @@ impl fmt::Display for CustomError {
                 CustomError::TemplateError(err) => err.to_string(),
                 CustomError::InvalidAuthorizationHeader(err) => err.to_string(),
                 CustomError::HashError(err) => err.to_string(),
+                CustomError::TooManyRequests {
+                    actual_count,
+                    permission_count,
+                } => format!(
+                    "Too many requests: actual_count = {}, permission_count: {}",
+                    actual_count, permission_count
+                ),
             }
         )
     }
@@ -43,25 +62,32 @@ impl IntoResponse for CustomError {
     fn into_response(self) -> Response {
         log::error!("{}", self.to_string());
 
-        match self {
+        let response = match self {
             CustomError::InvalidAuthorizationHeader(_)
             | CustomError::UserNotFound { .. }
             | CustomError::HashError(_)
-            | CustomError::UserUnauthorized { .. } => Response::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .header(
-                    "WWW-Authenticate",
-                    "Basic realm=\"Please enter your credentials\"",
-                )
-                .body(axum::body::Body::from("Unauthorized"))
-                .unwrap(),
-            CustomError::NotFound { message } => (StatusCode::NOT_FOUND, message).into_response(),
+            | CustomError::UserUnauthorized { .. } => {
+                return Response::builder()
+                    .status(StatusCode::UNAUTHORIZED)
+                    .header(
+                        "WWW-Authenticate",
+                        "Basic realm=\"Please enter your credentials\"",
+                    )
+                    .body(axum::body::Body::from("Unauthorized"))
+                    .unwrap()
+            }
+            CustomError::NotFound { message } => (StatusCode::NOT_FOUND, message),
+            CustomError::TooManyRequests { .. } => (
+                StatusCode::TOO_MANY_REQUESTS,
+                String::from("Too many requests"),
+            ),
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 String::from("Something went wrong"),
-            )
-                .into_response(),
-        }
+            ),
+        };
+
+        response.into_response()
     }
 }
 

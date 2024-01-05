@@ -62,7 +62,8 @@ async fn main() {
                 .put(handlers::update_planet),
         )
         .route("/planets/:planet/image", get(handlers::get_image_of_planet))
-        .with_state(app_state);
+        .with_state(app_state)
+        .into_make_service_with_connect_info::<SocketAddr>();
 
     let ip = env::var("IP")
         .map_or_else(

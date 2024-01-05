@@ -13,7 +13,7 @@ use crate::{
     dto::PlanetDto,
     error::CustomResult,
     model::{Planet, PlanetType},
-    services::{AppState, basic_auth::BasicAuth},
+    services::{basic_auth::BasicAuth, rate_limit_service::RateLimit, AppState},
 };
 
 #[derive(Template)]
@@ -34,6 +34,7 @@ pub struct PlanetTypeQueryParam {
 
 pub async fn get_planets(
     Query(param): Query<PlanetTypeQueryParam>,
+    _: RateLimit,
     State(state): State<Arc<AppState>>,
 ) -> CustomResult<Json<Vec<PlanetDto>>> {
     let planets = state.planet_service.get_planets(param.r#type).await?;
